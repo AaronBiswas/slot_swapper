@@ -7,7 +7,7 @@ const eventSchema = new mongoose.Schema({
   date: { type: Date, required: true },
   status: { type: String, enum: ["busy","swappable","pending"],required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  swap_state: { type: Boolean, default: true },
+  swap_state: { type: Boolean, default: false },
 }, { timestamps: true });
 
 
