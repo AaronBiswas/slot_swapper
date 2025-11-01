@@ -12,7 +12,12 @@ const slotSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    eventId: {
+    fromEventId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Event",
+      required: true,
+    },
+    toEventId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Event",
       required: true,

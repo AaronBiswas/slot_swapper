@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { Calendar, Plus, Edit2, Trash2, RefreshCw, ShoppingCart, ArrowRightLeft, Bell, Check, X, Clock } from 'lucide-react';
 
 const Dashboard = () => {
   const [events, setEvents] = useState([
-    { id: 1, title: 'Team Meeting', date: '2025-11-05', time: '10:00', status: 'BUSY', description: 'Weekly team sync' },
-    { id: 2, title: 'Lunch Break', date: '2025-11-05', time: '12:00', status: 'SWAPPABLE', description: 'Available for swapping' },
-    { id: 3, title: 'Client Call', date: '2025-11-08', time: '14:00', status: 'BUSY', description: 'Q4 review with client' },
-    { id: 4, title: 'Gym Session', date: '2025-11-10', time: '18:00', status: 'SWAPPABLE', description: 'Evening workout' },
+    { id: 1, title: 'Team Meeting', date: '2025-11-05', startTime: '10:00', endTime: '11:00', status: 'BUSY', description: 'Weekly team sync' },
+    { id: 2, title: 'Lunch Break', date: '2025-11-05', startTime: '12:00', endTime: '13:00', status: 'SWAPPABLE', description: 'Available for swapping' },
+    { id: 3, title: 'Client Call', date: '2025-11-08', startTime: '14:00', endTime: '15:00', status: 'BUSY', description: 'Q4 review with client' },
+    { id: 4, title: 'Gym Session', date: '2025-11-10', startTime: '18:00', endTime: '19:00', status: 'SWAPPABLE', description: 'Evening workout' },
   ]);
   
   const [view, setView] = useState('list');
@@ -19,13 +20,19 @@ const Dashboard = () => {
   const [outgoingRequests, setOutgoingRequests] = useState([]);
   const [loadingMarketplace, setLoadingMarketplace] = useState(false);
   const [loadingRequests, setLoadingRequests] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    date: '',
-    time: '',
-    status: 'BUSY',
-    description: ''
+
+  const { register, handleSubmit, reset, setValue, formState: { errors }, watch } = useForm({
+    defaultValues: {
+      title: '',
+      date: '',
+      startTime: '',
+      endTime: '',
+      status: 'BUSY',
+      description: ''
+    }
   });
+
+  const startTime = watch('startTime');
 
   useEffect(() => {
     if (view === 'marketplace') {
@@ -44,18 +51,18 @@ const Dashboard = () => {
         setMarketplaceSlots(data);
       } else {
         setMarketplaceSlots([
-          { id: 101, title: 'Coffee Break', date: '2025-11-06', time: '15:00', owner: 'Alice', description: 'Afternoon coffee slot' },
-          { id: 102, title: 'Study Time', date: '2025-11-07', time: '14:00', owner: 'Bob', description: 'Library study session' },
-          { id: 103, title: 'Yoga Class', date: '2025-11-09', time: '09:00', owner: 'Charlie', description: 'Morning yoga' },
-          { id: 104, title: 'Free Slot', date: '2025-11-10', time: '11:00', owner: 'Diana', description: 'Open availability' },
+          { id: 101, title: 'Coffee Break', date: '2025-11-06', startTime: '15:00', endTime: '15:30', owner: 'Alice', description: 'Afternoon coffee slot' },
+          { id: 102, title: 'Study Time', date: '2025-11-07', startTime: '14:00', endTime: '16:00', owner: 'Bob', description: 'Library study session' },
+          { id: 103, title: 'Yoga Class', date: '2025-11-09', startTime: '09:00', endTime: '10:00', owner: 'Charlie', description: 'Morning yoga' },
+          { id: 104, title: 'Free Slot', date: '2025-11-10', startTime: '11:00', endTime: '12:00', owner: 'Diana', description: 'Open availability' },
         ]);
       }
     } catch (error) {
       setMarketplaceSlots([
-        { id: 101, title: 'Coffee Break', date: '2025-11-06', time: '15:00', owner: 'Alice', description: 'Afternoon coffee slot' },
-        { id: 102, title: 'Study Time', date: '2025-11-07', time: '14:00', owner: 'Bob', description: 'Library study session' },
-        { id: 103, title: 'Yoga Class', date: '2025-11-09', time: '09:00', owner: 'Charlie', description: 'Morning yoga' },
-        { id: 104, title: 'Free Slot', date: '2025-11-10', time: '11:00', owner: 'Diana', description: 'Open availability' },
+        { id: 101, title: 'Coffee Break', date: '2025-11-06', startTime: '15:00', endTime: '15:30', owner: 'Alice', description: 'Afternoon coffee slot' },
+        { id: 102, title: 'Study Time', date: '2025-11-07', startTime: '14:00', endTime: '16:00', owner: 'Bob', description: 'Library study session' },
+        { id: 103, title: 'Yoga Class', date: '2025-11-09', startTime: '09:00', endTime: '10:00', owner: 'Charlie', description: 'Morning yoga' },
+        { id: 104, title: 'Free Slot', date: '2025-11-10', startTime: '11:00', endTime: '12:00', owner: 'Diana', description: 'Open availability' },
       ]);
     } finally {
       setLoadingMarketplace(false);
@@ -77,8 +84,8 @@ const Dashboard = () => {
             id: 201,
             requesterId: 'user123',
             requesterName: 'Alice Johnson',
-            theirSlot: { title: 'Morning Jog', date: '2025-11-12', time: '07:00', description: 'Early morning run' },
-            mySlot: { title: 'Lunch Break', date: '2025-11-05', time: '12:00', description: 'Available for swapping' },
+            theirSlot: { title: 'Morning Jog', date: '2025-11-12', startTime: '07:00', endTime: '08:00', description: 'Early morning run' },
+            mySlot: { title: 'Lunch Break', date: '2025-11-05', startTime: '12:00', endTime: '13:00', description: 'Available for swapping' },
             status: 'PENDING',
             createdAt: '2025-11-01T10:30:00Z'
           },
@@ -86,8 +93,8 @@ const Dashboard = () => {
             id: 202,
             requesterId: 'user456',
             requesterName: 'Bob Smith',
-            theirSlot: { title: 'Afternoon Walk', date: '2025-11-13', time: '16:00', description: 'Park stroll' },
-            mySlot: { title: 'Gym Session', date: '2025-11-10', time: '18:00', description: 'Evening workout' },
+            theirSlot: { title: 'Afternoon Walk', date: '2025-11-13', startTime: '16:00', endTime: '17:00', description: 'Park stroll' },
+            mySlot: { title: 'Gym Session', date: '2025-11-10', startTime: '18:00', endTime: '19:00', description: 'Evening workout' },
             status: 'PENDING',
             createdAt: '2025-11-01T09:15:00Z'
           }
@@ -103,8 +110,8 @@ const Dashboard = () => {
             id: 301,
             recipientId: 'user789',
             recipientName: 'Charlie Brown',
-            theirSlot: { title: 'Coffee Break', date: '2025-11-06', time: '15:00', description: 'Afternoon coffee' },
-            mySlot: { title: 'Lunch Break', date: '2025-11-05', time: '12:00', description: 'Available for swapping' },
+            theirSlot: { title: 'Coffee Break', date: '2025-11-06', startTime: '15:00', endTime: '15:30', description: 'Afternoon coffee' },
+            mySlot: { title: 'Lunch Break', date: '2025-11-05', startTime: '12:00', endTime: '13:00', description: 'Available for swapping' },
             status: 'PENDING',
             createdAt: '2025-10-31T14:20:00Z'
           }
@@ -116,8 +123,8 @@ const Dashboard = () => {
           id: 201,
           requesterId: 'user123',
           requesterName: 'Alice Johnson',
-          theirSlot: { title: 'Morning Jog', date: '2025-11-12', time: '07:00', description: 'Early morning run' },
-          mySlot: { title: 'Lunch Break', date: '2025-11-05', time: '12:00', description: 'Available for swapping' },
+          theirSlot: { title: 'Morning Jog', date: '2025-11-12', startTime: '07:00', endTime: '08:00', description: 'Early morning run' },
+          mySlot: { title: 'Lunch Break', date: '2025-11-05', startTime: '12:00', endTime: '13:00', description: 'Available for swapping' },
           status: 'PENDING',
           createdAt: '2025-11-01T10:30:00Z'
         },
@@ -125,8 +132,8 @@ const Dashboard = () => {
           id: 202,
           requesterId: 'user456',
           requesterName: 'Bob Smith',
-          theirSlot: { title: 'Afternoon Walk', date: '2025-11-13', time: '16:00', description: 'Park stroll' },
-          mySlot: { title: 'Gym Session', date: '2025-11-10', time: '18:00', description: 'Evening workout' },
+          theirSlot: { title: 'Afternoon Walk', date: '2025-11-13', startTime: '16:00', endTime: '17:00', description: 'Park stroll' },
+          mySlot: { title: 'Gym Session', date: '2025-11-10', startTime: '18:00', endTime: '19:00', description: 'Evening workout' },
           status: 'PENDING',
           createdAt: '2025-11-01T09:15:00Z'
         }
@@ -136,8 +143,8 @@ const Dashboard = () => {
           id: 301,
           recipientId: 'user789',
           recipientName: 'Charlie Brown',
-          theirSlot: { title: 'Coffee Break', date: '2025-11-06', time: '15:00', description: 'Afternoon coffee' },
-          mySlot: { title: 'Lunch Break', date: '2025-11-05', time: '12:00', description: 'Available for swapping' },
+          theirSlot: { title: 'Coffee Break', date: '2025-11-06', startTime: '15:00', endTime: '15:30', description: 'Afternoon coffee' },
+          mySlot: { title: 'Lunch Break', date: '2025-11-05', startTime: '12:00', endTime: '13:00', description: 'Available for swapping' },
           status: 'PENDING',
           createdAt: '2025-10-31T14:20:00Z'
         }
@@ -156,7 +163,7 @@ const Dashboard = () => {
         },
         body: JSON.stringify({
           requestId: requestId,
-          action: action // 'ACCEPT' or 'REJECT'
+          action: action
         })
       });
 
@@ -173,31 +180,31 @@ const Dashboard = () => {
     }
   };
 
-  const handleSubmit = () => {
-    if (!formData.title || !formData.date || !formData.time) {
-      alert('Please fill in all required fields');
-      return;
-    }
-    
+  const onSubmit = (data) => {
     if (editingEvent) {
       setEvents(events.map(event => 
-        event.id === editingEvent.id ? { ...formData, id: event.id } : event
+        event.id === editingEvent.id ? { ...data, id: event.id } : event
       ));
     } else {
-      setEvents([...events, { ...formData, id: Date.now() }]);
+      setEvents([...events, { ...data, id: Date.now() }]);
     }
     resetForm();
   };
 
   const resetForm = () => {
-    setFormData({ title: '', date: '', time: '', status: 'BUSY', description: '' });
+    reset();
     setEditingEvent(null);
     setShowModal(false);
   };
 
   const handleEdit = (event) => {
     setEditingEvent(event);
-    setFormData(event);
+    setValue('title', event.title);
+    setValue('date', event.date);
+    setValue('startTime', event.startTime);
+    setValue('endTime', event.endTime);
+    setValue('status', event.status);
+    setValue('description', event.description);
     setShowModal(true);
   };
 
@@ -237,7 +244,7 @@ const Dashboard = () => {
         alert('Failed to send swap request. Please try again.');
       }
     } catch (error) {
-      alert(`Swap request sent!\n\nYou want: ${selectedSlotForSwap.title} (${selectedSlotForSwap.date} at ${selectedSlotForSwap.time})\nYou offer: ${mySlot.title} (${mySlot.date} at ${mySlot.time})`);
+      alert(`Swap request sent!\n\nYou want: ${selectedSlotForSwap.title} (${selectedSlotForSwap.date} ${selectedSlotForSwap.startTime}-${selectedSlotForSwap.endTime})\nYou offer: ${mySlot.title} (${mySlot.date} ${mySlot.startTime}-${mySlot.endTime})`);
     }
     
     setShowSwapModal(false);
@@ -305,7 +312,7 @@ const Dashboard = () => {
                       <p className="text-sm opacity-70">{request.theirSlot.description}</p>
                       <div className="flex gap-3 text-sm mt-2">
                         <span>📅 {request.theirSlot.date}</span>
-                        <span>🕐 {request.theirSlot.time}</span>
+                        <span>🕐 {request.theirSlot.startTime} - {request.theirSlot.endTime}</span>
                       </div>
                     </div>
 
@@ -315,7 +322,7 @@ const Dashboard = () => {
                       <p className="text-sm opacity-70">{request.mySlot.description}</p>
                       <div className="flex gap-3 text-sm mt-2">
                         <span>📅 {request.mySlot.date}</span>
-                        <span>🕐 {request.mySlot.time}</span>
+                        <span>🕐 {request.mySlot.startTime} - {request.mySlot.endTime}</span>
                       </div>
                     </div>
                   </div>
@@ -378,7 +385,7 @@ const Dashboard = () => {
                       <p className="text-sm opacity-70">{request.theirSlot.description}</p>
                       <div className="flex gap-3 text-sm mt-2">
                         <span>📅 {request.theirSlot.date}</span>
-                        <span>🕐 {request.theirSlot.time}</span>
+                        <span>🕐 {request.theirSlot.startTime} - {request.theirSlot.endTime}</span>
                       </div>
                     </div>
 
@@ -388,7 +395,7 @@ const Dashboard = () => {
                       <p className="text-sm opacity-70">{request.mySlot.description}</p>
                       <div className="flex gap-3 text-sm mt-2">
                         <span>📅 {request.mySlot.date}</span>
-                        <span>🕐 {request.mySlot.time}</span>
+                        <span>🕐 {request.mySlot.startTime} - {request.mySlot.endTime}</span>
                       </div>
                     </div>
                   </div>
@@ -426,7 +433,7 @@ const Dashboard = () => {
                   <p className="text-sm opacity-70 mt-1">{slot.description}</p>
                   <div className="flex items-center gap-4 mt-2 text-sm">
                     <span>📅 {slot.date}</span>
-                    <span>🕐 {slot.time}</span>
+                    <span>🕐 {slot.startTime} - {slot.endTime}</span>
                     <span className="badge badge-info">Owner: {slot.owner}</span>
                   </div>
                 </div>
@@ -475,7 +482,7 @@ const Dashboard = () => {
               }`}
               onClick={() => handleEdit(event)}
             >
-              {event.time} {event.title}
+              {event.startTime}-{event.endTime} {event.title}
             </div>
           ))}
         </div>
@@ -502,7 +509,7 @@ const Dashboard = () => {
   const renderListView = () => {
     const sortedEvents = [...events].sort((a, b) => {
       const dateCompare = a.date.localeCompare(b.date);
-      return dateCompare !== 0 ? dateCompare : a.time.localeCompare(b.time);
+      return dateCompare !== 0 ? dateCompare : a.startTime.localeCompare(b.startTime);
     });
 
     return (
@@ -516,7 +523,7 @@ const Dashboard = () => {
                   <p className="text-sm opacity-70 mt-1">{event.description}</p>
                   <div className="flex items-center gap-4 mt-2 text-sm">
                     <span>📅 {event.date}</span>
-                    <span>🕐 {event.time}</span>
+                    <span>🕐 {event.startTime} - {event.endTime}</span>
                     <span className={`badge ${
                       event.status === 'BUSY' ? 'badge-error' : 'badge-success'
                     }`}>
@@ -633,18 +640,21 @@ const Dashboard = () => {
               {editingEvent ? 'Edit Event' : 'Create New Event'}
             </h2>
             
-            <div className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="form-control">
                 <label className="label">
                   <span className="label-text">Title</span>
                 </label>
                 <input
                   type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="input input-bordered"
-                  required
+                  {...register('title', { required: 'Title is required' })}
+                  className={`input input-bordered ${errors.title ? 'input-error' : ''}`}
                 />
+                {errors.title && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">{errors.title.message}</span>
+                  </label>
+                )}
               </div>
               
               <div className="form-control">
@@ -653,24 +663,56 @@ const Dashboard = () => {
                 </label>
                 <input
                   type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="input input-bordered"
-                  required
+                  {...register('date', { required: 'Date is required' })}
+                  className={`input input-bordered ${errors.date ? 'input-error' : ''}`}
                 />
+                {errors.date && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">{errors.date.message}</span>
+                  </label>
+                )}
               </div>
               
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Time</span>
-                </label>
-                <input
-                  type="time"
-                  value={formData.time}
-                  onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                  className="input input-bordered"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Start Time</span>
+                  </label>
+                  <input
+                    type="time"
+                    {...register('startTime', { required: 'Start time is required' })}
+                    className={`input input-bordered ${errors.startTime ? 'input-error' : ''}`}
+                  />
+                  {errors.startTime && (
+                    <label className="label">
+                      <span className="label-text-alt text-error">{errors.startTime.message}</span>
+                    </label>
+                  )}
+                </div>
+                
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">End Time</span>
+                  </label>
+                  <input
+                    type="time"
+                    {...register('endTime', { 
+                      required: 'End time is required',
+                      validate: (value) => {
+                        if (startTime && value <= startTime) {
+                          return 'End time must be after start time';
+                        }
+                        return true;
+                      }
+                    })}
+                    className={`input input-bordered ${errors.endTime ? 'input-error' : ''}`}
+                  />
+                  {errors.endTime && (
+                    <label className="label">
+                      <span className="label-text-alt text-error">{errors.endTime.message}</span>
+                    </label>
+                  )}
+                </div>
               </div>
               
               <div className="form-control">
@@ -678,8 +720,7 @@ const Dashboard = () => {
                   <span className="label-text">Status</span>
                 </label>
                 <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  {...register('status')}
                   className="select select-bordered"
                 >
                   <option value="BUSY">Busy</option>
@@ -692,22 +733,21 @@ const Dashboard = () => {
                   <span className="label-text">Description</span>
                 </label>
                 <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  {...register('description')}
                   className="textarea textarea-bordered"
                   rows="3"
                 />
               </div>
-            </div>
-            
-            <div className="modal-action">
-              <button onClick={handleSubmit} className="btn btn-primary">
-                {editingEvent ? 'Update Event' : 'Create Event'}
-              </button>
-              <button onClick={resetForm} className="btn">
-                Cancel
-              </button>
-            </div>
+              
+              <div className="modal-action">
+                <button type="submit" className="btn btn-primary">
+                  {editingEvent ? 'Update Event' : 'Create Event'}
+                </button>
+                <button type="button" onClick={resetForm} className="btn">
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -725,7 +765,7 @@ const Dashboard = () => {
                   <p className="text-sm opacity-70">{selectedSlotForSwap.description}</p>
                   <div className="flex gap-4 text-sm mt-1">
                     <span>📅 {selectedSlotForSwap.date}</span>
-                    <span>🕐 {selectedSlotForSwap.time}</span>
+                    <span>🕐 {selectedSlotForSwap.startTime} - {selectedSlotForSwap.endTime}</span>
                     <span className="badge badge-info">Owner: {selectedSlotForSwap.owner}</span>
                   </div>
                 </div>
@@ -748,7 +788,7 @@ const Dashboard = () => {
                         <p className="text-sm opacity-70">{slot.description}</p>
                         <div className="flex gap-4 text-sm mt-1">
                           <span>📅 {slot.date}</span>
-                          <span>🕐 {slot.time}</span>
+                          <span>🕐 {slot.startTime} - {slot.endTime}</span>
                         </div>
                       </div>
                       <ArrowRightLeft size={20} className="text-primary" />
