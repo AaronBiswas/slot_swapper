@@ -43,30 +43,80 @@ export const getSwapEvents = async (req, res) => {
 
 export const swapRequest = async (req, res) => {
   try {
-    const userId = req.user._id;
-     console.log(userId)
+    const userId = req.user?._id.toString();
+
     const { friendEventID, userEventId } = req.body;
 
     if (!userEventId || !friendEventID) {
-      throw new Error();
+      return res.status(400).json({
+        message: "Both userEventId and friendEventId are required.",
+      });
     }
 
-    const UserEvent = await Event.findOne({ userEventId });
+    const UserEvent = await Event.findById(userEventId);
 
-    const friendEvent = await Event.findOne({ friendEventID });
+    const friendEvent = await Event.findById(friendEventID);
+    console.log(friendEventID);
+    if (!UserEvent || !friendEvent) {
+      return res.status(400).json({
+        message: "No event are present.",
+      });
+    }
 
     try {
       const request = await SwapSlot.create({
         fromUserId: userId,
         toUserId: friendEvent.userId,
-        fromEventId: UserEvent,
-        toEventId: friendEvent,
+        fromEventId: UserEvent?._id.toString(),
+        toEventId: friendEvent?._id.toString(),
         status: "pending",
       });
       return res.status(200).json(request);
     } catch (error) {
       console.log("Error creating event", error);
     }
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const acceptRequest = async (req, res) => {
+  try {
+    const { requestState } = req.body;
+    const { slotId } = req.params;
+    if (!slotId) {
+      return res.status(400).json({
+        message: "Slot Id required",
+      });
+    }
+
+    const findslot = await SwapSlot.findById(slotId);
+
+    if (!findslot) {
+      return res.status(400).json({
+        message: "No slot exists",
+      });
+    }
+
+    const fromEventId = findslot.fromEventId;
+    const toEventId = findslot.toEventId;
+
+    const toUserId = findslot.toUserId;
+    const fromUserId = findslot.fromUserId;
+
+    const fromEvent = await Event.findById(fromEventId);
+    const toEvent = await Event.findById(toEventId);
+
+    const fields = ["title", "startTime", "endTime", "date"];
+
+    const temp = {};
+    fields.forEach((f) => (temp[f] = fromEvent[f]));
+
+    fields.forEach((f) => (fromEvent[f] = toEvent[f]));
+    fields.forEach((f) => (toEvent[f] = temp[f]));
+
+    await fromEvent.save();
+    await toEvent.save();
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
