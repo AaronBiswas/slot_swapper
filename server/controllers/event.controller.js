@@ -57,24 +57,32 @@ export const swapRequest = async (req, res) => {
 
     const friendEvent = await Event.findById(friendEventID);
     console.log(friendEventID);
-    if (!UserEvent || !friendEvent) {
+    if (
+      !UserEvent ||
+      !friendEvent ||
+      friendEvent?.status !== "swappable" ||
+      UserEvent?.status !== "swappable"
+    ) {
       return res.status(400).json({
         message: "No event are present.",
       });
     }
 
-    try {
-      const request = await SwapSlot.create({
-        fromUserId: userId,
-        toUserId: friendEvent.userId,
-        fromEventId: UserEvent?._id.toString(),
-        toEventId: friendEvent?._id.toString(),
-        status: "pending",
-      });
-      return res.status(200).json(request);
-    } catch (error) {
-      console.log("Error creating event", error);
-    }
+    const request = await SwapSlot.create({
+      fromUserId: userId,
+      toUserId: friendEvent.userId,
+      fromEventId: UserEvent?._id.toString(),
+      toEventId: friendEvent?._id.toString(),
+      status: "pending",
+    });
+
+    friendEvent.status = "pending";
+    UserEvent.status = "pending";
+
+    await friendEvent.save();
+    await UserEvent.save();
+
+    return res.status(200).json(request);
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -83,40 +91,48 @@ export const swapRequest = async (req, res) => {
 export const acceptRequest = async (req, res) => {
   try {
     const { requestState } = req.body;
-    const { slotId } = req.params;
+    const slotId = req.params.id;
     if (!slotId) {
       return res.status(400).json({
         message: "Slot Id required",
       });
     }
 
-    const findslot = await SwapSlot.findById(slotId);
+    const slot = await SwapSlot.findById(slotId);
 
-    if (!findslot) {
+    if (!slot) {
       return res.status(400).json({
         message: "No slot exists",
       });
     }
 
-    const fromEventId = findslot.fromEventId;
-    const toEventId = findslot.toEventId;
-
-    const toUserId = findslot.toUserId;
-    const fromUserId = findslot.fromUserId;
+    const fromEventId = slot.fromEventId;
+    const toEventId = slot.toEventId;
 
     const fromEvent = await Event.findById(fromEventId);
     const toEvent = await Event.findById(toEventId);
 
-    const fields = ["title", "startTime", "endTime", "date"];
+    if (requestState === true) {
+      const fields = ["title", "startTime", "endTime", "date"];
 
-    const temp = {};
-    fields.forEach((f) => (temp[f] = fromEvent[f]));
+      const temp = {};
+      fields.forEach((f) => (temp[f] = fromEvent[f]));
 
-    fields.forEach((f) => (fromEvent[f] = toEvent[f]));
-    fields.forEach((f) => (toEvent[f] = temp[f]));
+      fields.forEach((f) => (fromEvent[f] = toEvent[f]));
+      fields.forEach((f) => (toEvent[f] = temp[f]));
 
+      fromEvent.status = "busy";
+      toEvent.status = "busy";
+      slot.status = "accepted";
+    } else {
+      slot.status = "rejected";
+      fromEvent.status = "swappable";
+      toEvent.status = "swappable";
+    }
     await fromEvent.save();
     await toEvent.save();
+    await slot.save();
+    return res.status(200).json({ message: requestState });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
